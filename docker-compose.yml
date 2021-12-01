@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  db:
+    image: mariadb
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d
+    restart: always
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+
+  static_nginx:
+    image: nginx:stable
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./src:/var/nginx
+    ports:
+      - 8080:80
+
+  dynamic_apache:
+    build: ./apache
+    volumes:
+      - ./apache/000-default.conf:/etc/apache2/sites-available/000-default.conf
+      - ./src:/var/apache
+    ports:
+      - 8081:80
+    depends_on:
+      - db
+  #phpmyadmin:
+  #  image: phpmyadmin
+  #  restart: always
+  #  ports:
+  #    - 8080:80
+  #  environment:
+  #    - PMA_ARBITRARY=1
+  #  depends_on:
+  #    - db
